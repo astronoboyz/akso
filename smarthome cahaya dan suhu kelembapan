@@ -1,0 +1,106 @@
+#include <DHT.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// DHT22 setup
+#define DHTPIN 4
+#define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
+
+// LDR setup
+const int sensorCahayaPin = A0;
+const int pwmLedPin = 3;
+const int nonPwmLedPin = 2;
+const float resistorValue = 10000.0;
+const float voltageSupply = 5.0;
+const float sensorVoltageDivider = 1023.0;
+
+// LED tambahan
+const int ledMerahPin = 6;
+const int ledHijauPin = 7;
+const int ambangGelap = 100; // ambang batas lux
+
+// LCD I2C setup
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(pwmLedPin, OUTPUT);
+  pinMode(nonPwmLedPin, OUTPUT);
+  pinMode(ledMerahPin, OUTPUT);
+  pinMode(ledHijauPin, OUTPUT);
+
+  dht.begin();
+  lcd.begin(16, 2);
+  lcd.backlight();
+
+  Serial.println("Praktikum Embedded Systems");
+  Serial.println("LAB TEKNIK DIGITAL");
+
+  lcd.setCursor(0, 0);
+  lcd.print("Smart Monitoring");
+  lcd.setCursor(0, 1);
+  lcd.print("DHT & LDR aktif");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop() {
+  // === DHT22 Reading ===
+  float suhu = dht.readTemperature();
+  float kelembaban = dht.readHumidity();
+
+  // Cek apakah pembacaan valid
+  if (isnan(suhu) || isnan(kelembaban)) {
+    Serial.println("Gagal membaca dari sensor DHT!");
+    lcd.setCursor(0, 0);
+    lcd.print("DHT ERROR       ");
+    lcd.setCursor(0, 1);
+    lcd.print("                ");
+    delay(2000);
+    return; // keluar dari loop(), ulang lagi
+  }
+
+  // === LDR Reading ===
+  int ldrValue = analogRead(sensorCahayaPin);
+  float voltage = (ldrValue / sensorVoltageDivider) * voltageSupply;
+  float resistance = (voltageSupply / voltage - 1) * resistorValue;
+  int lux = map(resistance, 0, resistorValue, 255, 0);
+
+  // === Serial Output ===
+  Serial.println("===== SENSOR DATA =====");
+  Serial.print("LDR ADC: "); Serial.println(ldrValue);
+  Serial.print("Tegangan: "); Serial.print(voltage); Serial.println(" V");
+  Serial.print("Resistansi: "); Serial.print(resistance); Serial.println(" Ohm");
+  Serial.print("Lux (0-255): "); Serial.println(lux);
+  Serial.print("Suhu: "); Serial.print(suhu); Serial.println(" C");
+  Serial.print("Kelembaban: "); Serial.print(kelembaban); Serial.println(" %");
+
+  // === LED Output (PWM) ===
+  analogWrite(pwmLedPin, lux);
+  analogWrite(nonPwmLedPin, lux);
+
+  // === Kondisi LED Merah & Hijau ===
+  if (lux < ambangGelap) {
+    digitalWrite(ledMerahPin, HIGH);
+    digitalWrite(ledHijauPin, LOW);
+  } else {
+    digitalWrite(ledMerahPin, LOW);
+    digitalWrite(ledHijauPin, HIGH);
+  }
+
+  // === LCD Output ===
+  lcd.setCursor(0, 0);
+  lcd.print("T:");
+  lcd.print(suhu, 1);
+  lcd.print("C H:");
+  lcd.print(kelembaban, 1);
+  lcd.print("%  ");
+
+  lcd.setCursor(0, 1);
+  lcd.print("Lux:");
+  lcd.print(lux);
+  lcd.print("    "); // hapus sisa karakter
+
+  delay(1000);
+}
