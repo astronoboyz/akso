@@ -1,0 +1,253 @@
+1. Sensor DHT11 (Suhu dan Kelembaban)
+#include <DHT.h>                 // Library untuk sensor DHT
+#define DHTPIN 2                 // Pin data DHT terhubung ke pin digital 2
+#define DHTTYPE DHT11            // Tipe sensor yang digunakan adalah DHT11
+DHT dht(DHTPIN, DHTTYPE);        // Inisialisasi objek DHT
+
+void setup() {
+  Serial.begin(9600);            // Memulai komunikasi serial
+  dht.begin();                   // Memulai sensor DHT
+}
+
+void loop() {
+  float suhu = dht.readTemperature();       // Membaca suhu dalam Celcius
+  float kelembaban = dht.readHumidity();    // Membaca kelembaban
+
+  // Cek apakah pembacaan gagal
+  if (isnan(suhu) || isnan(kelembaban)) {
+    Serial.println("Gagal membaca dari sensor DHT!");
+    return;
+  }
+
+  Serial.print("Suhu: ");
+  Serial.print(suhu);
+  Serial.print(" °C\t");
+  Serial.print("Kelembaban: ");
+  Serial.print(kelembaban);
+  Serial.println(" %");
+
+  delay(2000);                  // Delay 2 detik sebelum pembacaan berikutnya
+}
+2. LDR (Light Dependent Resistor)
+int pinLDR = A0;                 // LDR terhubung ke pin analog A0
+
+void setup() {
+  Serial.begin(9600);            // Memulai komunikasi serial
+}
+
+void loop() {
+  int nilaiLDR = analogRead(pinLDR);  // Membaca nilai cahaya dari LDR
+
+  Serial.print("Nilai LDR: ");
+  Serial.println(nilaiLDR);     // Menampilkan nilai di Serial Monitor
+
+  delay(1000);                  // Delay 1 detik sebelum membaca lagi
+}
+
+3. Sensor Api (Flame Sensor)
+int pinFlame = A1;              // Sensor flame terhubung ke pin analog A1
+
+void setup() {
+  Serial.begin(9600);           // Memulai komunikasi serial
+  pinMode(pinFlame, INPUT);     // Menentukan pin flame sebagai input
+}
+
+void loop() {
+  int nilaiFlame = analogRead(pinFlame);   // Membaca nilai dari sensor flame
+
+  Serial.print("Nilai Flame: ");
+  Serial.println(nilaiFlame);  // Menampilkan nilai di Serial Monitor
+
+  if (nilaiFlame < 300) {       // Nilai kecil menunjukkan ada api (tergantung sensor)
+    Serial.println("Api terdeteksi!");
+  } else {
+    Serial.println("Tidak ada api.");
+  }
+delay(1000);                  // Delay 1 detik sebelum membaca ulang
+}
+4. Sensor Gas MQ2
+int pinGas = A2;                 // Sensor MQ2 terhubung ke pin analog A2
+
+void setup() {
+  Serial.begin(9600);           // Memulai komunikasi serial
+  pinMode(pinGas, INPUT);       // Menetapkan pin gas sebagai input
+}
+
+void loop() {
+  int nilaiGas = analogRead(pinGas);  // Membaca nilai analog dari sensor gas
+
+  Serial.print("Nilai Gas MQ2: ");
+  Serial.println(nilaiGas);     // Menampilkan nilai di Serial Monitor
+
+  if (nilaiGas > 400) {         // Jika nilai tinggi, artinya ada gas (batas bisa disesuaikan)
+    Serial.println("Gas terdeteksi!");
+  } else {
+    Serial.println("Gas normal.");
+  }
+
+  delay(1000);                  // Delay 1 detik sebelum pembacaan berikutnya
+
+
+5. Sensor Hujan (Raindrop Sensor)
+int pinHujan = A3;                // Sensor hujan terhubung ke pin analog A3
+
+void setup() {
+  Serial.begin(9600);            // Memulai komunikasi serial
+  pinMode(pinHujan, INPUT);      // Menetapkan pin sebagai input
+}
+
+void loop() {
+  int nilaiHujan = analogRead(pinHujan);   // Membaca nilai dari sensor hujan
+
+  Serial.print("Nilai Sensor Hujan: ");
+  Serial.println(nilaiHujan);    // Menampilkan nilai di Serial Monitor
+
+  if (nilaiHujan < 300) {        // Nilai rendah menunjukkan adanya air/hujan
+    Serial.println("Hujan terdeteksi!");
+  } else {
+    Serial.println("Tidak ada hujan.");
+  }
+
+  delay(1000);                   // Delay 1 detik sebelum pembacaan berikutnya
+
+6. Servo Motor (misalnya untuk sistem jemuran otomatis)
+#include <Servo.h>
+
+Servo servoJemuran;              // Membuat objek servo
+int posisiLipat = 0;             // Posisi terlipat (misalnya sudut 0 derajat)
+int posisiTerbuka = 90;          // Posisi terbuka (misalnya sudut 90 derajat)
+
+void setup() {
+  servoJemuran.attach(6);        // Hubungkan servo ke pin digital 6
+  servoJemuran.write(posisiTerbuka); // Mulai dengan jemuran terbuka
+  Serial.begin(9600);            // Aktifkan Serial Monitor
+}
+
+void loop() {
+  // Simulasi kondisi hujan
+  int kondisiHujan = analogRead(A3); // Contoh: baca dari sensor hujan di pin A3
+
+  Serial.print("Sensor Hujan: ");
+  Serial.println(kondisiHujan);
+
+  if (kondisiHujan < 300) {      // Jika hujan terdeteksi
+    servoJemuran.write(posisiLipat);   // Lipat jemuran
+    Serial.println("Jemuran dilipat karena hujan.");
+  } else {
+    servoJemuran.write(posisiTerbuka); // Buka jemuran
+    Serial.println("Cuaca cerah, jemuran dibuka.");
+  }
+
+  delay(2000);                   // Delay 2 detik agar perubahan tidak terlalu cepat
+}
+
+7. Sensor PIR (Passive Infrared Sensor)
+int pinPIR = 7;            // Sensor PIR terhubung ke pin digital 7
+int statusGerak = 0;       // Menyimpan status deteksi gerakan
+
+void setup() {
+  pinMode(pinPIR, INPUT);  // Set pin sebagai input
+  Serial.begin(9600);      // Memulai komunikasi serial
+}
+
+void loop() {
+  statusGerak = digitalRead(pinPIR);  // Baca status dari sensor PIR
+
+  if (statusGerak == HIGH) {          // Jika mendeteksi gerakan
+    Serial.println("Gerakan Terdeteksi!");
+  } else {
+    Serial.println("Tidak ada gerakan.");
+  }
+
+  delay(1000);                        // Delay 1 detik untuk pembacaan berikutnya
+}
+8. Sensor Ultrasonik HC-SR04 (Pengukur Jarak)
+const int trigPin = 8;       // Pin trig pada sensor ultrasonik
+const int echoPin = 9;       // Pin echo pada sensor ultrasonik
+long durasi;                 // Variabel untuk menyimpan durasi pulsa
+int jarak;                   // Variabel untuk menyimpan hasil jarak dalam cm
+
+void setup() {
+  pinMode(trigPin, OUTPUT);  // Set pin trig sebagai output
+  pinMode(echoPin, INPUT);   // Set pin echo sebagai input
+  Serial.begin(9600);        // Mulai komunikasi serial
+}
+
+void loop() {
+  // Kirim pulsa trig selama 10 mikrodetik
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  // Baca durasi pulsa echo (waktu pantulan)
+  durasi = pulseIn(echoPin, HIGH);
+
+  // Hitung jarak (cm) berdasarkan durasi
+  jarak = durasi * 0.034 / 2;
+
+  Serial.print("Jarak: ");
+  Serial.print(jarak);
+  Serial.println(" cm");
+
+  delay(1000);  // Delay 1 detik sebelum pembacaan berikutnya
+}
+
+9. Sensor Infrared Barrier
+int pinIR = 7;            // Sensor Infrared terhubung ke pin digital 7
+int statusIR = 0;         // Status sensor IR
+
+void setup() {
+  pinMode(pinIR, INPUT);  // Set pin IR sebagai input
+  Serial.begin(9600);     // Mulai komunikasi serial
+}
+
+void loop() {
+  statusIR = digitalRead(pinIR);  // Baca status sensor IR
+
+  if (statusIR == LOW) {           // Biasanya LOW berarti sinar terputus/ada objek
+    Serial.println("Halangan terdeteksi!");
+  } else {
+    Serial.println("Tidak ada halangan.");
+  }
+
+  delay(500);                     // Delay 0.5 detik
+}
+
+10. Sensor Getar (Vibration Sensor)
+int pinVibrasi = 6;           // Sensor getar terhubung ke pin digital 6
+int statusVibrasi = 0;        // Status sensor getar
+
+void setup() {
+  pinMode(pinVibrasi, INPUT);  // Set pin sebagai input
+  Serial.begin(9600);          // Mulai komunikasi serial
+}
+
+void loop() {
+  statusVibrasi = digitalRead(pinVibrasi);  // Baca status sensor
+
+  if (statusVibrasi == HIGH) {                // Jika ada getaran terdeteksi
+    Serial.println("Getaran terdeteksi!");
+  } else {
+    Serial.println("Tidak ada getaran.");
+  }
+
+  delay(500);                                 // Delay 0.5 detik
+}
+
+11. Sensor Kelembaban Tanah (Soil Moisture Sensor)
+int pinSoil = A0;            // Sensor tanah terhubung ke pin analog A0
+int nilaiSoil = 0;           // Variabel untuk menyimpan nilai kelembaban tanah
+
+void setup() {
+  Serial.begin(9600);        // Mulai komunikasi serial
+}
+
+void loop() {
+  nilaiSoil = analogRead(pinSoil);     // Baca nilai analog dari sensor
+  Serial.print("Kelembaban Tanah: ");
+  Serial.println(nilaiSoil);            // Tampilkan nilai kelembaban tanah
+
+  delay(1000);                         // Delay 1 detik sebelum pembacaan berikutnya
+}
